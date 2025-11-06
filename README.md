@@ -1,3 +1,9 @@
+# Build a Blog Aggregator in Go
+
+Build an RSS feed aggregator in Go
+
+This is the starter code used in Boot.dev's [Build a Blog Aggregator in Go](https://www.boot.dev/courses/build-blog-aggregator-golang) course.
+
 # Gator - A CLI RSS Feed Aggregator
 
 **Gator** is command-line tool written in Go that allows users to subscribe to RSS feeds, store and browse posts, and manage their subscriptions — all backed by a PostgreSQL database.
