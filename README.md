@@ -1,43 +1,47 @@
-# Build a Blog Aggregator in Go
+# Gator
 
-Build an RSS feed aggregator in Go
+Command-line RSS Feed Aggregator built in Go that allows users to subscribe to RSS feeds, fetch posts, and manage subscriptions.
 
 This is the starter code used in Boot.dev's [Build a Blog Aggregator in Go](https://www.boot.dev/courses/build-blog-aggregator-golang) course.
 
-# Gator - A CLI RSS Feed Aggregator
-
-**Gator** is command-line tool written in Go that allows users to subscribe to RSS feeds, store and browse posts, and manage their subscriptions — all backed by a PostgreSQL database.
-
 ---
 
-## Prerequisites
+## Requirements
 
-Before running Gator, make sure the following are installed on your system:
-
-- **[Go](https://golang.org/dl/)** (version 1.20+)
-- **[PostgreSQL](https://www.postgresql.org/download/)** DB
+- Go 1.20+
+- PostgreSQL
 
 ---
 
 ## Installation
 
-1. **Clone the repository:**
+1. Clone the Repository
 
-   ```bash
-   clone https://github.com/GircysRomualdas/gatorcli.git
-   cd gator
-   go mod tidy
-   ```
+2. Install dependencies:
+```bash
+go mod download
+```
 
-## Configuration
+3. Install PostgreSQL:  
+```bash
+sudo apt update
+sudo apt install postgresql postgresql-contrib
+```
+4. Configure PostgreSQL:
 
-Gator uses a `.gatorconfig.json` file in the home directory to store:
+```bash
+sudo service postgresql start
+sudo -u postgres psql
+```
 
-- The current user
-- PostgreSQL connection credentials
+Inside the psql shell:
+```sql
+CREATE DATABASE gator;
+ALTER USER postgres PASSWORD 'postgres';
+\q
+```
 
-### Example `.gatorconfig.json`:
-
+5. Create configuration file ~/.gatorconfig.json
 ```json
 {
   "db_url": "postgres://postgres:postgres@localhost:5432/gator?sslmode=disable",
@@ -45,96 +49,132 @@ Gator uses a `.gatorconfig.json` file in the home directory to store:
 }
 ```
 
-Add .gatorconfig.json to ~ (home).
+6. Run migrations:
+```bash
+goose -dir ./sql/schema postgres "postgres://postgres:postgres@localhost:5432/gator?sslmode=disable" up
+
+```
 
 ---
 
 ## Usage
 
-Gator supports a variety of CLI commands. After clone, run commands like this:
-
+Run Gator:
 ```bash
 go run . <command> [arguments]
 ```
 
-### User Management
+### Example Session
 
-- **Register a user**
+#### Reset users:
+```bash
+go run . register <username>
+```
 
-  ```bash
-  go run . register <username>
-  ```
+Output:
+```bash
+Users reset successfully!
+```
 
-- **Login as a user**
+#### Register:
+```bash
+go run . register kahya
+```
 
-  ```bash
-  go run . login <username>
-  ```
+Output:
+```bash
+User kahya created successfully!
+```
 
-- **Delete all user's**
+#### Login:
+```bash
+go run . login kahya
+```
 
-  ```bash
-  go run . reset
-  ```
+Output:
+```bash
+User switched successfully!
+```
 
-- **List all users**
+#### Add feed:
+```bash
+go run . addfeed "Hacker News RSS" "https://hnrss.org/newest"
+```
 
-  ```bash
-  go run . users
-  ```
+Output:
+```bash
+{ID:9b505121-4238-42e9-9df2-8a66616667fd Name:Hacker News RSS Url:https://hnrss.org/newest}
+successfully added feed to following
+```
 
----
+#### Follow feed:
+```bash
+go run . follow "https://hnrss.org/newest"
+```
 
-### Feed Management
+Output:
+```bash
+feed name: Hacker News RSS, user name: kahya
+```
 
-- **Add a new feed**
+#### View followed feeds:
+```bash
+go run . following
+```
 
-  ```bash
-  go run . addfeed <feed-name> <feed-url>
-  ```
+Output:
+```bash
+feed name: Hacker News RSS
+feed name: Lanes Blog
+```
 
-- **List all available feeds**
+#### Aggregate posts:
+```bash
+go run . agg 5s
+```
 
-  ```bash
-  go run . feeds
-  ```
+Output:
+```bash
+Collecting feeds every 5s
+post created
+post created
+...
+```
 
-- **Follow a feed**
+#### Browse recent posts:
+```bash
+go run . browse 3
+```
 
-  ```bash
-  go run . follow <feed-url>
-  ```
+Output:
+```bash
+Found 3 posts for user kahya:
+Sun Nov 9 from TechCrunch
+--- Apple reportedly plans ambitious satellite-powered iPhone features ---
+Link: https://techcrunch.com/2025/11/09/apple-reportedly-plans-ambitious-satellite-powered-iphone-features/
+=====================================
+Sun Nov 9 from TechCrunch
+--- TechCrunch Mobility: Elon Musk’s threats worked ---
+Link: https://techcrunch.com/2025/11/09/techcrunch-mobility-elon-musks-threats-worked/
+=====================================
+Sat Nov 8 from TechCrunch
+--- Is Wall Street losing faith in AI? ---
+Link: https://techcrunch.com/2025/11/08/is-wall-street-losing-faith-in-ai/
+```
 
-- **Unfollow a feed**
+## Commands
 
-  ```bash
-  go run . unfollow <feed-url>
-  ```
+| Command | Description |
+|---------|-------------|
+| `register <username>` | Register a new user |
+| `login <username>` | Log in as an existing user |
+| `reset` | Delete all users from the database |
+| `users` | List all registered users |
+| `addfeed <feed-name> <feed-url>` | Add a new RSS feed |
+| `feeds` | List all available feeds |
+| `follow <feed-url>` | Follow a feed |
+| `unfollow <feed-url>` | Unfollow a feed |
+| `following` | List all feeds you are currently following |
+| `agg <interval>` | Aggregate (fetch and store latest posts at a specified interval, e.g., `5s`) |
+| `browse [limit]` | Browse recent posts from feeds you follow (optionally limit results) |
 
-- **List feeds you’re currently following**
-
-  ```bash
-  go run . following
-  ```
-
----
-
-### Aggregation and Browsing
-
-- **Aggregate (fetch and store posts)**
-
-  ```bash
-  go run . agg
-  ```
-
-- **Browse posts from feeds you follow**
-
-  ```bash
-  go run . browse
-  ```
-
-  Optionally, limit the number of results:
-
-  ```bash
-  go run . browse 5
-  ```
