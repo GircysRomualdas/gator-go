@@ -68,7 +68,7 @@ go run . <command> [arguments]
 
 #### Reset users:
 ```bash
-go run . register <username>
+go run . reset
 ```
 
 Output:
